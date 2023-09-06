@@ -31,7 +31,7 @@ sendProdError = (err, res) => {
     console.error(err);
     return res
       .status(500)
-      .json({status: "error", message: "something went wrong"});
+      .json({ status: "error", message: "something went wrong" });
   }
 };
 

@@ -11,12 +11,14 @@
   "author": "Manish Chitre",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "mongodb": "^6.0.0",
     "mongoose": "^7.5.0",
     "morgan": "^1.10.0",
     "nodemon": "^3.0.1",
-    "slugify": "^1.6.6"
+    "slugify": "^1.6.6",
+    "validator": "^13.11.0"
   }
 }
