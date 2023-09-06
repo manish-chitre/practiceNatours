@@ -12,11 +12,15 @@ router.param("id", (req, res, next, value) => {
 router.route("/").get(tourController.getTours);
 
 router
+  .route("/top-5-cheap")
+  .get(tourController.top5Cheap, tourController.getTours);
+
+router.route("/").post(tourController.createTour);
+
+router
   .route("/:id")
-  .all(tourController.checkId)
-  .get(tourController.getTour)
-  .post(tourController.createTour)
-  .patch(tourController.updateTour)
-  .delete(tourController.deleteTour);
+  .get(tourController.checkId, tourController.getTour)
+  .patch(tourController.checkId, tourController.updateTour)
+  .delete(tourController.checkId, tourController.deleteTour);
 
 module.exports = router;
