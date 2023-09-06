@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-const validator = require("valdator");
+const validator = require("validator");
+const bcrypt = require("bcrypt");
 
 const userSchema = mongoose.Schema(
   {
@@ -14,16 +15,15 @@ const userSchema = mongoose.Schema(
       type: String,
       required: [true, "user role is required"],
       trim: true,
-      enum: {
-        value: ["user", "admin", "guide"],
-        default: "user",
-      },
+      enum: ["user", "admin", "guide"],
+      default: "user",
     },
     email: {
+      unique: true,
       type: String,
       required: [true, "email must be present"],
       trim: true,
-      validate: [validator.email, "email is not valid"],
+      validate: [validator.isEmail, "email is not valid"],
     },
     photo: {
       type: String,
@@ -39,7 +39,7 @@ const userSchema = mongoose.Schema(
       required: [true, "passwordConfirm must is required"],
       validate: {
         validator: function (val) {
-          return val == this.password;
+          return val === this.password;
         },
         message: "password and passwordConfirm doesn't match",
       },
@@ -48,6 +48,13 @@ const userSchema = mongoose.Schema(
   { toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
-const userModel = mongoose.Model("User", userSchema);
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+  this.password = await bcrypt.hash(this.password, 12);
+  this.passwordConfirm = undefined;
+  next();
+});
 
-module.exports = userModel;
+const User = mongoose.model("User", userSchema);
+
+module.exports = User;
