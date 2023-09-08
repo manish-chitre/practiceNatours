@@ -6,7 +6,7 @@ class APIFeatures {
 
   filter() {
     let excludedFields = ["sort", "fields", "limit", "page"];
-    let queryObj = {...this.queryString};
+    let queryObj = { ...this.queryString };
     excludedFields.forEach((ele) => delete queryObj[ele]);
 
     this.query = this.query.find(queryObj);
@@ -25,7 +25,7 @@ class APIFeatures {
 
   sort() {
     if (this.queryString.sort) {
-      let sortBy = req.query.sort.split(",").join(" "); //{-price -ratingsAverage}
+      let sortBy = this.queryString.sort.split(",").join(" "); //{-price -ratingsAverage}
       this.query = this.query.sort(sortBy);
     } else {
       this.query = this.query.sort("-_id");
