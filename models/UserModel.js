@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 
 const userSchema = mongoose.Schema(
   {
@@ -44,6 +45,9 @@ const userSchema = mongoose.Schema(
         message: "password and passwordConfirm doesn't match",
       },
     },
+    passwordChangedAt: Date,
+    passwordResetToken: String,
+    passwordResetExpires: String,
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
@@ -55,6 +59,50 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
+userSchema.pre("save", function (next) {
+  if (!this.isModified("password") || this.isNew) return next();
+
+  this.passwordChangedAt = Date.now() - 1000;
+
+  next();
+});
+
+userSchema.methods.passwordChangedAfter = function (JWTTimeStamp) {
+  let passwordChangedAfter = "";
+
+  if (this.passwordChangedAt) {
+    passwordChangedAfter = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+  }
+
+  return passwordChangedAfter > JWTTimeStamp;
+};
+
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  console.log(`resetToken before saving : ${resetToken}`);
+  console.log(`passwordResetToken before saving ${this.passwordResetToken}`);
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+  return resetToken;
+};
+
+userSchema.methods.comparePassword = async function (
+  candidatePassword,
+  userPassword
+) {
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
+
 const User = mongoose.model("User", userSchema);
+
+(async () => {
+  await User.ensureIndexes({ email: true }, { unique: true });
+})();
 
 module.exports = User;
