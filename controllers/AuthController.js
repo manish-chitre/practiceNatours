@@ -21,6 +21,7 @@ exports.login = catchAsync(async (req, res, next) => {
   let user = await User.findOne({ email: email }).select("+password");
 
   if (!user) {
+    await loginAttempts(user, next);
     return next(
       new AppError(
         "Invalid Authentication! Please check your email address, and try again.",
@@ -29,14 +30,58 @@ exports.login = catchAsync(async (req, res, next) => {
     );
   }
 
-  if (!user.comparePassword(password, user.password)) {
+  if (!(await user.comparePassword(password, user.password))) {
+    await loginAttempts(user, next);
     return next(new AppError("Sorry,password doesn't match.", 400));
   }
 
+  return createSendToken(user, 200, res);
+});
+
+const createSendToken = (user, statusCode, res) => {
   let token = signToken(user._id);
 
-  return res.status(200).json({ status: "success", token: token });
-});
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true, //not get modified by browsers
+  };
+
+  if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
+
+  res.cookie("jwt", token, cookieOptions);
+
+  return res
+    .status(statusCode)
+    .json({ status: "success", token: token, data: { user: user } });
+};
+
+async function loginAttempts(user, next) {
+  let nextLoginCycle = Date.now() + 60 * 60 * 1000;
+
+  console.log(user.lastLoginAt);
+
+  if (
+    user.lastLoginAt &&
+    parseInt(user.lastLoginAt.getTime() / 1000, 10) < nextLoginCycle
+  ) {
+    if (user.loginAttempts >= 3) {
+      return next(
+        new AppError(
+          "Sorry, you have exceeded login attempts.Please try again after sometime",
+          400
+        )
+      );
+    }
+    user.loginAttempts = user.loginAttempts + 1;
+  } else {
+    user.lastLoginAt = Date.now();
+    user.loginAttempts = 1;
+  }
+
+  await user.save({ validateBeforeSave: false });
+}
 
 exports.signUp = catchAsync(async (req, res, next) => {
   let user = await User.create(req.body);
@@ -44,15 +89,7 @@ exports.signUp = catchAsync(async (req, res, next) => {
   //that he has chance to authenticate himself the next time when he wants
   //to work.
 
-  let token = signToken(user._id);
-
-  return res.status(200).json({
-    status: "success",
-    token: token,
-    data: {
-      user: user,
-    },
-  });
+  return createSendToken(user, 200, res);
 });
 
 const signToken = (id) => {
@@ -157,9 +194,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   user.passwordConfirm = newPasswordConfirm;
   await user.save();
 
-  let token = signToken(user._id);
-
-  return res.status(200).json({ status: "success", token: token });
+  await createSendToken(user, 200, res);
 });
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
@@ -186,9 +221,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   user.passwordResetExpires = undefined;
   await user.save();
 
-  const token = signToken(user._id);
-
-  return res.status(200).json({ status: "success", token });
+  return createSendToken(user, 200, res);
 });
 
 exports.protect = catchAsync(async (req, res, next) => {

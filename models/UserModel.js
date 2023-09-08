@@ -10,7 +10,7 @@ const userSchema = mongoose.Schema(
       required: [true, "name is required"],
       trim: true,
       minLength: [3, "name must be minimum length of 6"],
-      maxLength: [20, "name must be max length of 20"],
+      maxLength: [50, "name must be max length of 20"],
     },
     role: {
       type: String,
@@ -48,6 +48,8 @@ const userSchema = mongoose.Schema(
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: String,
+    lastLoginAt: Date,
+    loginAttempts: Number,
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
