@@ -3,7 +3,7 @@ const dotenv = require("dotenv");
 const fs = require("fs");
 const Tour = require("./models/TourModel");
 
-dotenv.config({path: "./config.env"});
+dotenv.config({ path: "./config.env" });
 
 let db = process.env.DATABASE_CONNECTION.replace(
   "<username>",
@@ -19,7 +19,7 @@ mongoose.connect(db).then((con) => {
   console.log("database has been successfully connected");
 });
 
-let tours = fs.readFileSync(`${__dirname}/dev-data/tours-simple.json`, "utf-8");
+let tours = fs.readFileSync(`${__dirname}/dev-data/tours.json`, "utf-8");
 
 importData = async () => {
   try {

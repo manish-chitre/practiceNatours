@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const reviewRouter = require("./ReviewRouter");
 const tourController = require("../controllers/TourController");
 const authController = require("../controllers/AuthController");
 
@@ -9,6 +10,8 @@ router.param("id", (req, res, next, value) => {
   console.log(`your id is : ${value}`);
   next();
 });
+
+router.use("/:tourId/reviews", reviewRouter);
 
 router.route("/").get(authController.protect, tourController.getTours);
 
