@@ -19,12 +19,22 @@ router
   .route("/top-5-cheap")
   .get(tourController.top5Cheap, tourController.getTours);
 
-router.route("/").post(tourController.createTour);
+router
+  .route("/")
+  .post(
+    authController.protect,
+    authController.restrictTo(["guide", "admin", "lead-guide"]),
+    tourController.createTour
+  );
 
 router
   .route("/:id")
-  .get(tourController.checkId, tourController.getTour)
-  .patch(tourController.checkId, tourController.updateTour)
+  .get(authController.protect, tourController.getTour)
+  .patch(
+    authController.protect,
+    authController.restrictTo("guide", "admin", "lead-guide"),
+    tourController.updateTour
+  )
   .delete(
     authController.protect,
     authController.restrictTo("admin", "lead-guide"),

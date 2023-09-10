@@ -50,7 +50,10 @@ const userSchema = mongoose.Schema(
     passwordResetToken: String,
     passwordResetExpires: String,
     lastLoginAt: Date,
-    loginAttempts: Number,
+    loginAttempts: {
+      type: Number,
+      default: 0,
+    },
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
