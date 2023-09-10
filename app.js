@@ -7,6 +7,7 @@ const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const hpp = require("hpp");
+const reviewRouter = require("./routers/ReviewRouter");
 
 const app = express();
 app.use(express.json({ limit: "10kb" }));
@@ -49,6 +50,7 @@ app.use(
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/tours", tourRouter);
+app.use("/api/v1/reviews", reviewRouter);
 
 app.use(globalErrorHandler);
 module.exports = app;

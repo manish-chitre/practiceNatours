@@ -34,6 +34,7 @@ const userSchema = mongoose.Schema(
     password: {
       type: String,
       required: [true, "password must be present"],
+      select: false,
     },
     passwordConfirm: {
       type: String,

@@ -1,5 +1,7 @@
 const slugify = require("slugify");
 const mongoose = require("mongoose");
+const User = require("./UserModel");
+
 const tourSchema = mongoose.Schema(
   {
     id: {
@@ -16,8 +18,8 @@ const tourSchema = mongoose.Schema(
     difficulty: {
       type: String,
       enum: {
-        values: ["hard", "medium", "easy"],
-        message: "difficulty can be hard, medium or easy",
+        values: ["difficult", "medium", "easy"],
+        message: "difficulty can be difficult, medium or easy",
       },
     },
     duration: {
@@ -63,14 +65,70 @@ const tourSchema = mongoose.Schema(
         type: Date,
       },
     ],
+    startLocation: {
+      //GeoJSON
+      type: {
+        type: String,
+        default: "Point",
+        enum: ["Point"],
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: "Point",
+          enum: ["Point"],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
+    guides: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: "User",
+      },
+    ],
   },
-  {skipInvalid: true, toJSON: {virtuals: true}, toObject: {virtuals: true}}
+  {
+    skipInvalid: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
 tourSchema.virtual("durationWeeks").get(function () {
   let duration = this.duration / 7;
   duration = parseFloat(duration.toFixed(2));
   return duration;
+});
+
+tourSchema.virtual("reviews", {
+  ref: "reviews",
+  foreignField: "tour",
+  localField: "_id",
+});
+
+//Embedding Documents
+// tourSchema.pre("save", async function (next) {
+//   const guidesPromises = this.guides.map(async (id) => User.findById(id));
+//   this.guides = await Promise.all(guidesPromises);
+//   console.log(this.guides);
+//   next();
+// });
+
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "guides",
+    select: "-__v -passwordChangedAt",
+  });
+  next();
 });
 
 //document middle ware
