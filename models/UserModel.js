@@ -16,7 +16,7 @@ const userSchema = mongoose.Schema(
       type: String,
       required: [true, "user role is required"],
       trim: true,
-      enum: ["user", "admin", "guide"],
+      enum: ["user", "admin", "guide", "lead-guide"],
       default: "user",
     },
     email: {
@@ -38,7 +38,6 @@ const userSchema = mongoose.Schema(
     },
     passwordConfirm: {
       type: String,
-      required: [true, "passwordConfirm must is required"],
       validate: {
         validator: function (val) {
           return val === this.password;
@@ -49,7 +48,10 @@ const userSchema = mongoose.Schema(
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: String,
-    lastLoginAt: Date,
+    lastLoginAt: {
+      type: Date,
+      default: "",
+    },
     loginAttempts: {
       type: Number,
       default: 0,

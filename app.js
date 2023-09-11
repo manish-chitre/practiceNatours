@@ -29,7 +29,7 @@ const limiter = rateLimit({
 app.use("/api", limiter);
 
 //data-sanitization against NOSQL query injection
-app.use(mongoSanitize());
+//app.use(mongoSanitize());
 
 //Data sanitization against xss
 app.use(xss());

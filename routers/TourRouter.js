@@ -13,32 +13,23 @@ router.param("id", (req, res, next, value) => {
 
 router.use("/:tourId/reviews", reviewRouter);
 
-router.route("/").get(authController.protect, tourController.getTours);
+router.route("/").get(tourController.getTours);
 
 router
   .route("/top-5-cheap")
   .get(tourController.top5Cheap, tourController.getTours);
 
-router
-  .route("/")
-  .post(
-    authController.protect,
-    authController.restrictTo(["guide", "admin", "lead-guide"]),
-    tourController.createTour
-  );
+router.use(
+  authController.protect,
+  authController.restrictTo("admin", "lead-guide")
+);
+
+router.route("/").post(tourController.createTour);
 
 router
   .route("/:id")
-  .get(authController.protect, tourController.getTour)
-  .patch(
-    authController.protect,
-    authController.restrictTo("guide", "admin", "lead-guide"),
-    tourController.updateTour
-  )
-  .delete(
-    authController.protect,
-    authController.restrictTo("admin", "lead-guide"),
-    tourController.deleteTour
-  );
+  .get(tourController.getTour)
+  .patch(tourController.updateTour)
+  .delete(tourController.deleteTour);
 
 module.exports = router;

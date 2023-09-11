@@ -5,6 +5,13 @@ exports.getAllUsers = factory.getAll(User);
 
 exports.deleteUser = factory.deleteOne(User);
 
+exports.getUser = factory.getOne(User);
+
+exports.filterUpdateUserReq = (req, res, next) => {
+  filterObj(req.body, "name", "email");
+  next();
+};
+
 const filterObj = function (obj, ...allowedFields) {
   let newObj = {};
   Object.keys(obj).forEach((ele) => {
@@ -15,6 +22,9 @@ const filterObj = function (obj, ...allowedFields) {
   return newObj;
 };
 
-exports.updateMe = (req, res, next) => {
-  return factory.updateOne(User, filterObj(req.body, "name", "email"));
+exports.updateUser = factory.updateOne(User);
+
+exports.me = (req, res, next) => {
+  req.params.id = req.user._id;
+  next();
 };

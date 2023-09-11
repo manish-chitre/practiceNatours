@@ -58,11 +58,7 @@ const createSendToken = (user, statusCode, res) => {
 };
 
 async function loginAttempts(user, next) {
-  console.log(
-    `last login at : ${user.lastLoginAt}, last login attempt : ${user.loginAttempts}`
-  );
-
-  if (user.lastLoginAt) {
+  if (user.lastLoginAt != null) {
     let lastLoginTime =
       parseInt(user.lastLoginAt.getTime() / 1000, 10) + 60 * 60 * 1000;
     let presentTime = parseInt(new Date().getTime() / 1000, 10);

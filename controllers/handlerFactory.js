@@ -10,7 +10,7 @@ exports.getAll = (Model) => {
       .fields()
       .pagination();
 
-    let docs = await features.query;
+    let docs = await features.query.explain();
 
     if (docs.length == 0) {
       return res
@@ -52,12 +52,8 @@ exports.getOne = function (Model, popOptions) {
   });
 };
 
-exports.updateOne = (Model, filteredObj) => {
-  return catchAsync(async (req, res, next) => {
-    if (filteredObj) {
-      req.body = filteredObj;
-    }
-
+exports.updateOne = (Model) =>
+  catchAsync(async (req, res, next) => {
     let query = Model.findByIdAndUpdate({ _id: req.params.id }, req.body, {
       new: true,
       runValidators: true,
@@ -71,7 +67,6 @@ exports.updateOne = (Model, filteredObj) => {
 
     return res.status(201).json({ status: "success", data: updatedDoc });
   });
-};
 
 exports.createOne = (Model) => {
   return catchAsync(async (req, res, next) => {
