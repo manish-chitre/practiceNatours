@@ -58,28 +58,32 @@ const createSendToken = (user, statusCode, res) => {
 };
 
 async function loginAttempts(user, next) {
-  let nextLoginCycle = Date.now() + 60 * 60 * 1000;
+  if (user.lastLoginAt != null) {
+    let lastLoginTime =
+      parseInt(user.lastLoginAt.getTime() / 1000, 10) + 60 * 60 * 1000;
+    let presentTime = parseInt(new Date().getTime() / 1000, 10);
 
-  console.log(user.lastLoginAt);
-
-  if (
-    user.lastLoginAt &&
-    parseInt(user.lastLoginAt.getTime() / 1000, 10) < nextLoginCycle
-  ) {
-    if (user.loginAttempts >= 3) {
-      return next(
-        new AppError(
-          "Sorry, you have exceeded login attempts.Please try again after sometime",
-          400
-        )
-      );
+    if (lastLoginTime > presentTime) {
+      if (user.loginAttempts >= 3) {
+        user.loginAttempts = 0;
+        return next(
+          new AppError(
+            "Sorry, you have exceeded login attempts.Please try again after sometime",
+            400
+          )
+        );
+      } else {
+        user.lastLoginAt = Date.now();
+        user.loginAttempts = user.loginAttempts + 1;
+      }
+    } else {
+      user.lastLoginAt = Date.now();
+      user.loginAttempts = user.loginAttempts + 1;
     }
-    user.loginAttempts = user.loginAttempts + 1;
   } else {
     user.lastLoginAt = Date.now();
-    user.loginAttempts = 1;
+    user.loginAttempts = user.loginAttempts + 1;
   }
-
   await user.save({ validateBeforeSave: false });
 }
 

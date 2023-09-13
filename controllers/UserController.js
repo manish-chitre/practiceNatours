@@ -1,27 +1,16 @@
 const User = require("../models/UserModel");
-const AppError = require("../utils/appError");
-const catchAsync = require("../utils/catchAsync");
+const factory = require("../controllers/handlerFactory");
 
-exports.getAllUsers = catchAsync(async (req, res, next) => {
-  let users = await User.find();
-  console.log(users);
-  if (users.length == 0) {
-    console.log("this is something big");
-    return next(new AppError("no user registrations found", 404));
-  }
-  return res.status(200).json({ status: "success", data: { users } });
-});
+exports.getAllUsers = factory.getAll(User);
 
-exports.deleteUser = catchAsync(async (req, res, next) => {
-  let deletedUser = await User.findByIdAndRemove({ _id: req.params.id });
+exports.deleteUser = factory.deleteOne(User);
 
-  if (!deletedUser)
-    return res
-      .status(400)
-      .json({ status: "fail", message: "user not found with id" });
+exports.getUser = factory.getOne(User);
 
-  return res.status(200).json({ status: "success", data: { deletedUser } });
-});
+exports.filterUpdateUserReq = (req, res, next) => {
+  filterObj(req.body, "name", "email");
+  next();
+};
 
 const filterObj = function (obj, ...allowedFields) {
   let newObj = {};
@@ -33,11 +22,9 @@ const filterObj = function (obj, ...allowedFields) {
   return newObj;
 };
 
-exports.updateMe = catchAsync(async (req, res, next) => {
-  const filteredBody = filterObj(req.body, "name", "email");
-  let updatedUser = await User.findByIdAndUpdate(req.user._id, filteredBody, {
-    new: true,
-    runValidators: true,
-  });
-  return res.status(200).json({ status: "success", data: updatedUser });
-});
+exports.updateUser = factory.updateOne(User);
+
+exports.me = (req, res, next) => {
+  req.params.id = req.user._id;
+  next();
+};
