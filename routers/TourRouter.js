@@ -24,6 +24,10 @@ router.use(
   authController.restrictTo("admin", "lead-guide")
 );
 
+router
+  .route("/tours-within/:distance/center/:latlng/units/:unit")
+  .get(tourController.getTourWithin);
+
 router.route("/").post(tourController.createTour);
 
 router

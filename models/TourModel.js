@@ -107,6 +107,7 @@ const tourSchema = mongoose.Schema(
 //tourSchema.index({ price: 1 }); //1 ascending order -1 decending order
 
 tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ startLocation: "2dsphere" });
 
 tourSchema.virtual("durationWeeks").get(function () {
   let duration = this.duration / 7;
